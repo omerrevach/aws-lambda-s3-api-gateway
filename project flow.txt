@@ -1,0 +1,52 @@
+USER (HTTP Request)
+    │
+    ├── POST /write (Sends data to store)
+    │    └── API Gateway
+    │          └── Lambda
+    │                └── Saves data.json in S3
+    │
+    ├── GET /read (Requests stored data)
+         └── API Gateway
+               └── Lambda
+                     └── Retrieves data.json from S3
+                           └── Returns the data to the user
+
+
+so the task that they gave me is two scenarios.
+
+1. a user makes a post request to the API gateway that triggers the 
+   a lambda function then it writes to the s3 bucket what was in the payload.
+
+2. the user makes a get request to the API gateway which 
+   triggers lambda and Retrieves and outputs the info in it to the user?
+
+
+
+1️⃣ USER MAKES A POST REQUEST (SEND DATA)
+   │
+   ├──> API Gateway receives the request
+   │
+   ├──> API Gateway triggers Lambda
+   │
+   ├──> Lambda writes the payload to "data.json" in S3
+   │
+   ├──> Lambda responds with {"file_name": "data.json"}
+   │
+   ├──> API Gateway returns response to the user
+   │
+   └──> ✅ Data is now stored in S3!
+
+
+2️⃣ USER MAKES A GET REQUEST (RETRIEVE DATA)
+   │
+   ├──> API Gateway receives the request
+   │
+   ├──> API Gateway triggers Lambda
+   │
+   ├──> Lambda fetches "data.json" from S3
+   │
+   ├──> Lambda returns the file contents to API Gateway
+   │
+   ├──> API Gateway sends response back to the user
+   │
+   └──> ✅ User receives the stored data!

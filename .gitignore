@@ -1,0 +1,16 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+.venv/
+*.idea
+
+.env
+
+.terraform/
+terraform
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
