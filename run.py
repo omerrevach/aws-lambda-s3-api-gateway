@@ -32,6 +32,8 @@ def send_get_request(api_url, file_name):
 
     if response.status_code == 200:
         return response.json()
+    else:
+        return {"error": "Failed to send GET request"}
 
 if __name__ == "__main__":
     file_name = "data.json"
