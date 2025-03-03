@@ -4,7 +4,15 @@ curl -X POST "api-gateway-url/prod/write" \
      -H "Content-Type: application/json" \
      -d '{"message": "Hello from Lambda"}'
 
+
 curl -X GET "api-gateway-url/prod/read"
+
+
+curl -X POST "https://your-api-url/prod/write" \
+     -H "Content-Type: application/json" \
+     -d '{"file_name": "example.json", "message": "Hello from Lambda"}'
+
+curl -X GET "https://your-api-url/prod/read?file_name=example.json"
 
 
 terraform output api_gateway_url

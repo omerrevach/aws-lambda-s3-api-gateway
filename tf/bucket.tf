@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "lambda-bucket-wizard-wiz"
+  bucket = var.bucket_name
 }
 
 resource "aws_s3_bucket_policy" "s3_policy" {
