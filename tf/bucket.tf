@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "_lambda-bucket-wizard-wiz"
+  bucket = "lambda-bucket-wizard-wiz"
 }
 
 resource "aws_s3_bucket_policy" "s3_policy" {
@@ -16,7 +16,7 @@ resource "aws_s3_bucket_policy" "s3_policy" {
         "AWS": "${aws_iam_role.lambda_role.arn}" // only this role that is attached to lambbda is allowed access
       },
       "Action": ["s3:PutObject", "s3:GetObject"],
-      "Resource": "arn:aws:s3:::${aws_s3_bucket.lambda.bucket.id}/*"
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.lambda_bucket.id}/*"
     }
   ]
 }
