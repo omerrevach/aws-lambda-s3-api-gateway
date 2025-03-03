@@ -13,7 +13,7 @@ resource "aws_s3_bucket_policy" "s3_policy" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "${aws_iam_role.lambda_role.arn}" // only this role that is attached to lambbda is allowed access
+        "AWS": "${aws_iam_role.lambda_role.arn}"
       },
       "Action": ["s3:PutObject", "s3:GetObject"],
       "Resource": "arn:aws:s3:::${aws_s3_bucket.lambda_bucket.id}/*"

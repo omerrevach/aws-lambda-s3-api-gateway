@@ -1,0 +1,1 @@
+{"errorMessage": "'requestContext'", "errorType": "KeyError", "requestId": "f2e76bce-a232-425a-8938-df6fb9499874", "stackTrace": ["  File \"/var/task/lambda_function.py\", line 15, in lambda_handler\n    http_method = event[\"requestContext\"][\"http\"][\"method\"]\n"]}

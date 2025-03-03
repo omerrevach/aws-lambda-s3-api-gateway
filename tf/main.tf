@@ -55,7 +55,7 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 
 data "archive_file" "zip_the_python_code" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda/"
+  source_dir  = "${path.module}/../lambda/"
   output_path = "${path.module}/lambda/lambda_function.zip"
 }
 
@@ -67,6 +67,12 @@ resource "aws_lambda_function" "terraform_lambda_func" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
   depends_on    = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.lambda_bucket.id // I pass the bucket name to the lambda function
+    }
+  }
 }
 
 
@@ -105,20 +111,66 @@ resource "aws_api_gateway_method" "read_method" {
 
 resource "aws_api_gateway_integration" "write_integration" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id
-  resource_id = aws_api_gateway_method.write_resource.id
-  http_method = aws_api_gateway_method.write_method
+  resource_id = aws_api_gateway_resource.write_resource.id
+  http_method = "POST"
   integration_http_method = "POST"
   type = "AWS_PROXY"
 
-  uri = aws_lambda_function.terraform_lambda_func.invoke_url
+  uri = aws_lambda_function.terraform_lambda_func.invoke_arn
+  content_handling = "CONVERT_TO_TEXT"
 }
 
 resource "aws_api_gateway_integration" "read_integration" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id
   resource_id = aws_api_gateway_resource.read_resource.id
-  http_method = aws_api_gateway_method.read_method
+  http_method = "GET"
   integration_http_method = "POST"
   type = "AWS_PROXY"
 
-  uri = aws_lambda_function.terraform_lambda_func.invoke_url
+  uri = aws_lambda_function.terraform_lambda_func.invoke_arn
+  content_handling = "CONVERT_TO_TEXT"
+}
+
+# Get aws acount ID dynamically
+data "aws_caller_identity" "current" {}
+
+# Allow API Gateway to invoke lambda for /write (POST)
+resource "aws_lambda_permission" "apigw_lambda_write" {
+  statement_id  = "AllowExecutionFromAPIGatewayWrite"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.terraform_lambda_func.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # Restrict to /write API Gateway calls
+  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/*/POST/write"
+}
+
+# Allow api gateway to invoke lambda for /read (GET)
+resource "aws_lambda_permission" "apigw_lambda_read" {
+  statement_id  = "AllowExecutionFromAPIGatewayRead"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.terraform_lambda_func.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # Restrict to /read api gateway calls
+  source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/*/GET/read"
+}
+
+resource "aws_api_gateway_deployment" "api_gateway_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.lambda_api.id
+  depends_on = [aws_api_gateway_integration.write_integration, 
+                aws_api_gateway_integration.read_integration
+               ]
+
+  lifecycle {
+    create_before_destroy = true // I make an update to this endpoint you need to tell aws to create the new deployment
+                                 // before destroying the old one because default is frist to destroy then create
+  }
+}
+
+// Makes the api publickly accessibnle
+resource "aws_api_gateway_stage" "api_gateway_stage" {
+  deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
+  rest_api_id = aws_api_gateway_rest_api.lambda_api.id
+  stage_name = "prod"
 }
