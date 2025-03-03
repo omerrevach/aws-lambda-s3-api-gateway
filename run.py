@@ -27,9 +27,18 @@ def send_post_request(api_url):
     else:
         return {"error": "Failed to send POST request"}
 
+def send_get_request(api_url):
+    response = requests.get(f"{api_url}/read")
+    
+    if response.status_code == 200:
+        return response.json()
+
 if __name__ == "__main__":
     api_gateway_url = get_api_gateway_url()
     
     post_request = send_post_request(api_gateway_url)
     print(post_request)
+    
+    get_request = send_get_request(api_gateway_url)
+    print(get_request)
     
