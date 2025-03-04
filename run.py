@@ -1,12 +1,16 @@
 import subprocess
 import requests
 import json
-# process = subprocess.Popen(f"pydeps --no-output --show-deps --max-bacon=0 .".split(), cwd=run_path, stdout=subprocess.PIPE)
 
 def get_api_gateway_url():
+    """
+    Retrieve the API Gateway URL from Terraform outputs.
+    This allows us to dynamically get the endpoint URL without hardcoding it.
+    """
+    
     api_url = subprocess.run(
         ["terraform", "output", "-raw", "api_gateway_url"], # -raw to remove quotes
-        cwd='tf', # The terraform output command needs to run in the tf folder
+        cwd='tf', # The terraform output command needs to run in the tf folder, cwd=run_path
         capture_output=True,
         text=True
     )

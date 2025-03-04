@@ -1,3 +1,4 @@
+# This role allows the lambda service to assume it and execute the function
 resource "aws_iam_role" "lambda_role" {
 name   = "Spacelift_Test_Lambda_Function_Role"
 assume_role_policy = <<EOF
@@ -17,6 +18,8 @@ assume_role_policy = <<EOF
 EOF
 }
 
+# IAM policy for lambda to access s3 and CloudWatch logs
+# CloudWatch logs for debugging and s3 access for the function
 resource "aws_iam_policy" "iam_policy_for_lambda" {
   name        = "aws_iam_policy_for_terraform_aws_lambda_role"
   path        = "/"
@@ -76,25 +79,26 @@ resource "aws_lambda_function" "terraform_lambda_func" {
 }
 
 
-
+# Create the api gateway
 resource "aws_api_gateway_rest_api" "lambda_api" {
   name = "api_gateway_to_lambada"
 }
 
-// Create write resource
+// Create write resource endpoint
 resource "aws_api_gateway_resource" "write_resource" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id // Links the resource to the main api gateway
   parent_id   = aws_api_gateway_rest_api.lambda_api.root_resource_id // Defines where the resource is placed in tthe api structure
   path_part   = "write" // Specifies the URL path (/write or /readd)
 }
 
-// Create read resource
+// Create read resource endpoint
 resource "aws_api_gateway_resource" "read_resource" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id
   parent_id   = aws_api_gateway_rest_api.lambda_api.root_resource_id
   path_part   = "read"
 }
 
+# POST method for /write endpoint
 resource "aws_api_gateway_method" "write_method" {
   rest_api_id   = aws_api_gateway_rest_api.lambda_api.id
   resource_id   = aws_api_gateway_resource.write_resource.id
@@ -102,6 +106,7 @@ resource "aws_api_gateway_method" "write_method" {
   authorization = "NONE"
 }
 
+# GET method for /read endpoint
 resource "aws_api_gateway_method" "read_method" {
   rest_api_id   = aws_api_gateway_rest_api.lambda_api.id
   resource_id   = aws_api_gateway_resource.read_resource.id
@@ -109,6 +114,7 @@ resource "aws_api_gateway_method" "read_method" {
   authorization = "NONE"
 }
 
+# Lambda integration for /write endpoint
 resource "aws_api_gateway_integration" "write_integration" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id
   resource_id = aws_api_gateway_resource.write_resource.id
@@ -120,6 +126,7 @@ resource "aws_api_gateway_integration" "write_integration" {
   content_handling = "CONVERT_TO_TEXT"
 }
 
+# Lambda integration for /read endpoint
 resource "aws_api_gateway_integration" "read_integration" {
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id
   resource_id = aws_api_gateway_resource.read_resource.id
@@ -163,12 +170,11 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
                ]
 
   lifecycle {
-    create_before_destroy = true // I make an update to this endpoint you need to tell aws to create the new deployment
-                                 // before destroying the old one because default is frist to destroy then create
+    create_before_destroy = true #Create new deployment before destroying old one
   }
 }
 
-// Makes the api publickly accessibnle
+// Makes the api public accessibnle
 resource "aws_api_gateway_stage" "api_gateway_stage" {
   deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
   rest_api_id = aws_api_gateway_rest_api.lambda_api.id

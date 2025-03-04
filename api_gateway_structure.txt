@@ -67,3 +67,9 @@
     "stageVariable2": "value2"
   }
 }
+
+
+
+
+# https://lepczynski.it/en/aws_en/how-to-read-and-write-a-file-on-s3-using-lambda-function-and-boto3/
+# https://stackoverflow.com/questions/51217331/return-payload-for-a-api-gateway-aws

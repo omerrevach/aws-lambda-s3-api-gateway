@@ -2,22 +2,29 @@ import json
 import boto3
 import os
 
-# https://lepczynski.it/en/aws_en/how-to-read-and-write-a-file-on-s3-using-lambda-function-and-boto3/
-# https://stackoverflow.com/questions/51217331/return-payload-for-a-api-gateway-aws
-
 s3 = boto3.client("s3")
+# Get the bucket name from environment variables in terraform
 bucket_name = os.environ["BUCKET_NAME"]
 
 def lambda_handler(event, context):
+    """
+    Main handler for Lambda function.
+    Handles both POST requests (writing to S3) and GET requests (reading from S3).
     
+    POST: Writes JSON body to S3 with file_name from query parameter
+    GET: Retrieves file content from S3 based on file_name query parameter
+    """
     print(event)
     http_method = event["httpMethod"]
-    # Extract file_name from query parameters
     
+    # Handle POST request (write to s3)
     if http_method == "POST":
         try:
             body = json.loads(event.get('body', '{}'))
+            # Get filename from query parameter or use default
             file_name = event.get("queryStringParameters", {}).get("file_name", "default.json")
+            
+            # Write json data to s3
             s3.put_object(
                 Key=file_name,
                 Bucket=bucket_name,
@@ -30,8 +37,9 @@ def lambda_handler(event, context):
         except (json.JSONDecodeError, KeyError):
             return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON"})}
         
+    # Handle GET request (read from S3)
     elif http_method == "GET":
-        # Extract file_name from query parameters
+        # Retrieve the file from s3
         file_name = event.get("queryStringParameters", {}).get("file_name", "data.json")
         try:
             content = s3.get_object (

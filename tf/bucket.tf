@@ -2,6 +2,8 @@ resource "aws_s3_bucket" "lambda_bucket" {
   bucket = var.bucket_name
 }
 
+# Creates bucket policy to restrict access to only the lambda role
+# This is a security best practice to ensure only lambda function can access the bucket
 resource "aws_s3_bucket_policy" "s3_policy" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
