@@ -36,20 +36,31 @@
 
 
 ## Setup Instructions
-1. Prerequisites
-Ensure these are installed or configured correctly:
-- AWS CLI with correct credentials and permissions
-- Terraform
-- Python 3.11+
+1. **Prerequisites**
+- Ensure these are installed or configured correctly:
+    - AWS CLI with correct credentials and permissions
+    - Terraform
+    - Python 3.11+
 
-2. Deploy the infrustructure:
+2. **Git clone or unzip**
+- If you want to clone from github then:
+    ```
+    git clone https://github.com/omerrevach/aws-lambda-s3-api-gateway.git
+    ```
+- If you want to use the zip:
+    ```
+    unzip submission.zip
+    ```
+
+
+3. **Deploy the infrustructure:**
     ```
     cd tf
     terraform init
     terraform apply -auto-approve
     ```
 
-3. Checking POST and GET requests
+4. **Checking POST and GET requests**
 use the "run.py"  to test the api gateway and make sure it is functioning correctly:
     ```
     python3 run.py
